@@ -1,1 +1,59 @@
+CREATE TABLE Customers (
+    CustomerID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100),
+    DOB DATE,
+    Balance DECIMAL(15, 2),
+    LastModified DATETIME,
+    IsVIP BOOLEAN DEFAULT FALSE
+);
 
+
+CREATE TABLE Loans (
+    LoanID INT PRIMARY KEY AUTO_INCREMENT,
+    CustomerID INT,
+    LoanAmount DECIMAL(15, 2),
+    InterestRate DECIMAL(5, 2),
+    StartDate DATE,
+    EndDate DATE,
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+INSERT INTO Customers (Name, DOB, Balance, LastModified)
+VALUES
+('John Smith', '1950-05-12', 8500.00, NOW()),         
+('Emily Johnson', '1990-08-25', 15000.00, NOW()),     
+('Michael Lee', '1962-03-30', 11000.00, NOW()),       
+('Sarah Patel', '1985-11-10', 5000.00, NOW()),        
+('David Kim', '1955-06-01', 12000.00, NOW());         
+
+INSERT INTO Loans (CustomerID, LoanAmount, InterestRate, StartDate, EndDate)
+VALUES
+(1, 10000.00, 8.5, '2022-01-01', '2025-07-15'),   
+(2, 20000.00, 7.2, '2023-03-10', '2026-03-10'),   
+(3, 15000.00, 6.5, '2021-05-20', '2025-07-05'),   
+(4, 5000.00, 9.0, '2023-06-01', '2026-06-01'),    
+(5, 25000.00, 7.8, '2020-02-15', '2025-07-01');   
+
+//Scenario 1
+
+UPDATE Loans l
+JOIN Customers c ON l.CustomerID = c.CustomerID
+SET l.InterestRate = l.InterestRate - 1
+WHERE TIMESTAMPDIFF(YEAR, c.DOB, CURDATE()) > 60;
+
+//Scenario 2
+
+ALTER TABLE Customers 
+MODIFY COLUMN IsVIP BOOLEAN DEFAULT FALSE;
+UPDATE Customers
+SET IsVIP = TRUE
+WHERE Balance > 10000;
+
+//Scenario 3
+
+SELECT CONCAT('Reminder: Loan for ', c.Name, ' is due on ', l.EndDate) AS ReminderMessage
+FROM Loans l
+JOIN Customers c ON l.CustomerID = c.CustomerID
+WHERE l.EndDate BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY);
