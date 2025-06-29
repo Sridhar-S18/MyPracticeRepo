@@ -1,1 +1,103 @@
+-- Create SavingsAccounts table
+CREATE TABLE SavingsAccounts (
+    AccountID NUMBER PRIMARY KEY,
+    CustomerID NUMBER,
+    Balance NUMBER(10, 2)
+);
+
+-- Create Employees table
+CREATE TABLE Employees (
+    EmpID NUMBER PRIMARY KEY,
+    Name VARCHAR2(50),
+    DepartmentID NUMBER,
+    Salary NUMBER(10, 2)
+);
+
+-- Create Accounts table for fund transfer
+CREATE TABLE Accounts (
+    AccountID NUMBER PRIMARY KEY,
+    CustomerID NUMBER,
+    Balance NUMBER(10, 2)
+);
+
+-- Insert sample data
+-- Savings accounts
+INSERT INTO SavingsAccounts VALUES (101, 1, 1000);
+INSERT INTO SavingsAccounts VALUES (102, 2, 2000);
+
+-- Employees
+INSERT INTO Employees VALUES (1, 'Alice', 10, 50000);
+INSERT INTO Employees VALUES (2, 'Bob', 10, 60000);
+INSERT INTO Employees VALUES (3, 'Charlie', 20, 55000);
+
+-- Accounts
+INSERT INTO Accounts VALUES (201, 1, 5000);
+INSERT INTO Accounts VALUES (202, 1, 3000);
+
+COMMIT;
+
+ Scenario 1
+
+CREATE OR REPLACE PROCEDURE ProcessMonthlyInterest IS
+BEGIN
+  FOR acc IN (SELECT * FROM SavingsAccounts) LOOP
+    UPDATE SavingsAccounts
+    SET Balance = Balance + (Balance * 0.01)
+    WHERE AccountID = acc.AccountID;
+  END LOOP;
+END;
+/
+
+EXEC ProcessMonthlyInterest;
+
+SELECT * FROM SavingsAccounts;
+
+ Scenario 2
+
+CREATE OR REPLACE PROCEDURE UpdateEmployeeBonus (
+    p_dept_id IN NUMBER,
+    p_bonus_pct IN NUMBER
+) IS
+BEGIN
+  UPDATE Employees
+  SET Salary = Salary + (Salary * (p_bonus_pct / 100))
+  WHERE DepartmentID = p_dept_id;
+END;
+/
+
+EXEC UpdateEmployeeBonus(10, 10); -- 10% bonus for dept 10
+
+SELECT * FROM Employees;
+
+ Scenario 3
+
+CREATE OR REPLACE PROCEDURE TransferFunds (
+    p_from_acc IN NUMBER,
+    p_to_acc IN NUMBER,
+    p_amount IN NUMBER
+) IS
+  v_balance NUMBER;
+BEGIN
+  -- Get balance of source account
+  SELECT Balance INTO v_balance FROM Accounts WHERE AccountID = p_from_acc;
+
+  IF v_balance < p_amount THEN
+    RAISE_APPLICATION_ERROR(-20001, 'Insufficient balance.');
+  ELSE
+    -- Deduct from source
+    UPDATE Accounts
+    SET Balance = Balance - p_amount
+    WHERE AccountID = p_from_acc;
+
+    -- Add to target
+    UPDATE Accounts
+    SET Balance = Balance + p_amount
+    WHERE AccountID = p_to_acc;
+  END IF;
+END;
+/
+
+EXEC TransferFunds(201, 202, 1000);
+
+SELECT * FROM Accounts;
 
