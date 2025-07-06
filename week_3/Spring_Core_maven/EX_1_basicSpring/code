@@ -1,1 +1,65 @@
+Main Class
+
+package com.example.LibraryManagement;
+
+import com.example.LibraryManagement.Service.BookService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class LibraryManagementApplication implements CommandLineRunner {
+
+	@Autowired
+	private BookService bookService;
+
+	public static void main(String[] args)
+	{
+		SpringApplication.run(LibraryManagementApplication.class, args);
+	}
+
+	@Override
+	public void run(String... args) {
+		bookService.addBook("Clean Code");
+	}
+
+}
+
+Book Service
+
+package com.example.LibraryManagement.Service;
+
+import com.example.LibraryManagement.Repo.BookRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class BookService {
+    private BookRepository bookRepository;
+
+    // Setter method for dependency injection
+    @Autowired
+    public void setBookRepository(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
+
+    public void addBook(String title) {
+        System.out.println("Adding book: " + title);
+        bookRepository.saveBook(title);
+    }
+}
+
+Book Repository
+
+package com.example.LibraryManagement.Repo;
+
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class BookRepository {
+    public void saveBook(String title) {
+        System.out.println("Book saved: " + title);
+    }
+}
 
