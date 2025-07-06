@@ -1,1 +1,77 @@
+Main Class
+
+import com.example.LibraryManagement.Service.BookService;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class LibraryManagementApplication {
+
+	public static void main(String[] args) {
+		
+		ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+
+		
+		BookService bookService = (BookService) context.getBean("bookService");
+
+		
+		bookService.addBook("Effective Java");
+	}
+}
+
+Book Service
+
+package com.example.LibraryManagement.Service;
+
+import com.example.LibraryManagement.Repo.BookRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class BookService {
+    private BookRepository bookRepository;
+
+    // Setter method for dependency injection
+
+    public void setBookRepository(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
+
+    public void addBook(String title) {
+        System.out.println("Adding book: " + title);
+        bookRepository.saveBook(title);
+    }
+}
+
+Book Repository
+
+package com.example.LibraryManagement.Repo;
+
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class BookRepository {
+    public void saveBook(String title) {
+        System.out.println("Book saved: " + title);
+    }
+}
+
+Xml configuration
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Bean for BookRepository -->
+    <bean id="bookRepository" class="com.example.LibraryManagement.Repo.BookRepository" />
+
+    <!-- Bean for BookService and inject BookRepository -->
+    <bean id="bookService" class="com.example.LibraryManagement.Service.BookService">
+        <property name="bookRepository" ref="bookRepository" />
+    </bean>
+
+</beans>
+
 
